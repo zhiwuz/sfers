@@ -6,7 +6,7 @@ import time
 import math
 import numpy as np
 import datetime
-from esrs.robot_simulation.createActuator import create1DMultiActuators,generate1DMotorVoltages,voltageTorqueControlStep
+from sfers.robot_simulation.createActuator import create1DMultiActuators,generate1DMotorVoltages,voltageTorqueControlStep
 
 
 class inchworm:
