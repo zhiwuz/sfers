@@ -11,8 +11,6 @@ def create1DMultiActuators(actuatorNumber, unitMotorNumber,
     width = actuatorWidth
     linkLength = actuatorLength / m
     jointLength = 0.5 * linkLength
-    flagLength = 0.0
-    flagMass = 0.0
 
     startBoxId = p.createCollisionShape(p.GEOM_BOX,
                                         halfExtents=[0.5 * jointLength, 0.5 * width, 0.5 * thickness])
@@ -23,10 +21,6 @@ def create1DMultiActuators(actuatorNumber, unitMotorNumber,
                                       halfExtents=[0.5 * jointLength, 0.5 * width, 0.5 * thickness],
                                       collisionFramePosition=[0.5 * jointLength, 0, 0])
 
-    flagBoxId = p.createCollisionShape(p.GEOM_BOX,
-                                       halfExtents=[0.5 * flagLength, 0.5 * width, 0.5 * thickness],
-                                       collisionFramePosition=[0.5 * flagLength, 0, 0])
-
     mass = actuatorMass / (2 * m)
     visualShapeId = -1
     basePosition = basePosition
@@ -34,30 +28,26 @@ def create1DMultiActuators(actuatorNumber, unitMotorNumber,
 
     link_Masses = [actuatorMass / m for i in range(N * m - 1)]
     link_Masses.append(actuatorMass / (2 * m))
-    link_Masses.append(flagMass)
 
     linkCollisionShapeIndices = [linkBoxId for i in range(N * m - 1)]
     linkCollisionShapeIndices.append(endBoxId)
-    linkCollisionShapeIndices.append(flagBoxId)
 
-    linkVisualShapeIndices = [-1 for i in range(N * m + 1)]
+    linkVisualShapeIndices = [-1 for i in range(N * m)]
 
     linkPositions = [[0.5 * jointLength, 0, 0]]
     for i in range(N * m - 1):
         linkPositions.append([linkLength, 0, 0])
-    linkPositions.append([jointLength, 0, 0])
 
-    linkOrientations = [[0, 0, 0, 1] for i in range(N * m + 1)]
+    linkOrientations = [[0, 0, 0, 1] for i in range(N * m)]
 
     linkInertialFramePositions = [[0.5 * linkLength, 0, 0] for i in range(N * m - 1)]
     linkInertialFramePositions.append([0.5 * jointLength, 0, 0])
-    linkInertialFramePositions.append([0.5 * flagLength, 0, 0])
 
-    linkInertialFrameOrientations = [[0, 0, 0, 1] for i in range(N * m + 1)]
-    indices = [i for i in range(N * m + 1)]
+    linkInertialFrameOrientations = [[0, 0, 0, 1] for i in range(N * m)]
+    indices = [i for i in range(N * m)]
     jointTypes = [p.JOINT_REVOLUTE for i in range(N * m)]
-    jointTypes.append(p.JOINT_FIXED)
-    axis = [[0, 1, 0] for i in range(N * m + 1)]
+
+    axis = [[0, 1, 0] for i in range(N * m)]
 
     boxId = p.createMultiBody(mass,
                               startBoxId,
@@ -75,7 +65,7 @@ def create1DMultiActuators(actuatorNumber, unitMotorNumber,
                               linkJointTypes=jointTypes,
                               linkJointAxis=axis)
 
-    jointNumber = p.getNumJoints(boxId) - 1
+    jointNumber = p.getNumJoints(boxId)
     # Disable the default motors
     for joint in range(jointNumber):
         p.setJointMotorControl2(boxId,
@@ -99,13 +89,11 @@ def voltageTorqueControlStep(boxId, actuatorVoltages, TorVolThe, N, m, jointNumb
     positions = []
     jointStates = p.getJointStates(boxId, jointIndex)
     linkStates = p.getLinkStates(boxId, linkIndex)
-    positions.append(p.getBasePositionAndOrientation(boxId)[0])  # append base position
     for joint in range(jointNumber):
         theta.append(jointStates[joint][0])
         angularVelocities.append(jointStates[joint][1])
         positions.append(linkStates[joint][4])
 
-    positions.append(linkStates[jointNumber][4])  # append the flag position
     Tor = [TorVolThe(theta[joint], angularVelocities[joint], motorVoltages[joint]) for joint in range(jointNumber)]
     p.setJointMotorControlArray(boxId,
                                 jointIndex,
