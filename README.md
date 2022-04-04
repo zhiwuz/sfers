@@ -36,6 +36,7 @@ Zhiwu Zheng, Prakhar Kumar, Yenan Chen, Hsin Cheng, Sigurd Wagner, Minjie Chen, 
 ```
 
 For modeling of piezoelectric robots:
+
 Zhiwu Zheng, Prakhar Kumar, Yenan Chen, Hsin Cheng, Sigurd Wagner, Minjie Chen, Naveen Verma and James C. Sturm. <strong>Piezoelectric Soft Robot Inchworm Motion by Controlling Ground Friction through Robot Shape</strong>. arXiv preprint, arXiv: [2111.00944](https://arxiv.org/abs/2111.00944)
 ```
 @misc{https://doi.org/10.48550/arxiv.2111.00944,
