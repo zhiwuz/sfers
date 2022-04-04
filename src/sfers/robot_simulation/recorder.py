@@ -5,7 +5,7 @@ import os
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from sfers.robot_simulation.inchworm_envs import RobotSimulator, inchworm, InchwormBackward, InchwormCrawl, FullFrictionalInchworm
+from sfers.robot_simulation.inchworm_envs import RobotSimulator, Inchworm, InchwormBackward, InchwormCrawl, FullFrictionalInchworm
 
 
 class Recorder(object):
@@ -166,7 +166,7 @@ class InchwormRobotShapeRecorder(RobotShapeRecorder):
     def __init__(self, simulator=None, filename='output.avi', record_intervals_in_steps=500, framerate=12,
                  driving_period=0.05, saving=True):
         if simulator is None or simulator == 'forward':
-            simulator = inchworm(parameter='trimorph parameter 2')
+            simulator = Inchworm(parameter='trimorph parameter 2')
         elif simulator == 'backward':
             simulator = InchwormBackward(parameter='trimorph parameter 2')
         elif simulator == 'crawl':
@@ -186,8 +186,8 @@ class InchwormRobotShapeRecorder(RobotShapeRecorder):
         self.N = simulator.N
         self.m = simulator.m
         for step in range(simulator.simCycles):
-            actuatorVoltages = simulator.applyVoltages(simulator.simTime, period)
-            simulator.simStep(actuatorVoltages)
+            actuatorVoltages = simulator.apply_voltages(simulator.simTime, period)
+            simulator.sim_step(actuatorVoltages)
             if step == 0 or (step + 1) % self.record_intervals_in_steps == 0:
                 self.record(equal_scale=equal_scale, **kwargs)
         simulator.close()

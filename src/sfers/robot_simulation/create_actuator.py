@@ -3,19 +3,19 @@ from sfers.robot_models.model_parameters import modelParameter
 
 
 class RobotBase(modelParameter):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         modelParameter.__init__(self, parameter=parameter)
         self._p = None
 
-    def create1DMultiActuators(self,
-                               actuatorNumber,
-                               unitMotorNumber,
-                               actuatorMass,
-                               actuatorLength,
-                               actuatorWidth,
-                               actuatorThickness,
-                               basePosition=(0, 0, 0),
-                               baseOrientation=(0, 0, 0, 1)):
+    def create_1d_multi_actuators(self,
+                                  actuatorNumber,
+                                  unitMotorNumber,
+                                  actuatorMass,
+                                  actuatorLength,
+                                  actuatorWidth,
+                                  actuatorThickness,
+                                  basePosition=(0, 0, 0),
+                                  baseOrientation=(0, 0, 0, 1)):
         N = actuatorNumber
         m = unitMotorNumber
         thickness = actuatorThickness
@@ -86,15 +86,15 @@ class RobotBase(modelParameter):
         return [boxId, jointNumber]
 
     @staticmethod
-    def generate1DMotorVoltages(actuatorVoltages, actuatorNumber, unitMotorNumber):
+    def generate_1d_motor_voltages(actuatorVoltages, actuatorNumber, unitMotorNumber):
         N = actuatorNumber
         m = unitMotorNumber
         motorVoltages = [actuatorVoltages[i] / m for i in range(N) for j in range(m)]
         return motorVoltages
 
-    def voltageTorqueControlStep(self, boxId, actuatorVoltages, TorVolThe, N, m, jointNumber, jointIndex, linkIndex,
-                                 jointLength):
-        motorVoltages = self.generate1DMotorVoltages(actuatorVoltages, N, m)
+    def voltage_torque_control_step(self, boxId, actuatorVoltages, TorVolThe, N, m, jointNumber, jointIndex, linkIndex,
+                                    jointLength):
+        motorVoltages = self.generate_1d_motor_voltages(actuatorVoltages, N, m)
         theta = []
         angularVelocities = []
         positions = []

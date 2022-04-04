@@ -10,8 +10,8 @@ class BaseSimulatorTest(object):
             timeStep, recordStepInterval = 2e-5 / 240, 1
         return timeStep, recordStepInterval
 
-    def set_simulator(self, simulatorClass, m, parameter='trimorph parameter 2'):
-        simulator = simulatorClass(parameter=parameter)
+    def set_simulator(self, simulator_class, m, parameter='trimorph parameter 2'):
+        simulator = simulator_class(parameter=parameter)
         simulator.m = m
         simulator.timeStep, simulator.recordStepInterval = self.set_parameter(m)
         simulator.dampingEta = 0.2

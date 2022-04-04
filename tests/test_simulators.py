@@ -2,33 +2,36 @@ import pytest
 import io
 import os
 
-from sfers.robot_simulation.inchworm_envs import SingleActuatorCantilever, SingleActuatorCantileverDCResponseVoltageScan, SingleActuatorCantileverACResponse,\
-    inchworm, InchwormBackward, FullFrictionalInchworm, InchwormCrawl, FrictionalFrogMotionV2, \
-    InchwormPeriodScan, InchwormDCResponseVoltageScan, InchwormCrawlPeriodScan, InchwormReversedPeriodScan, InchwormBackwardPeriodScan, FullInchwormPeriodScan, FullFrictionalInchwormPeriodScan, FrictionalFrogMotionV2PeriodScan, FullFrictionalInchwormPeriodDampingFrictionScan
+from sfers.robot_simulation.inchworm_envs import SingleActuatorCantilever, \
+    SingleActuatorCantileverDCResponseVoltageScan, SingleActuatorCantileverACResponse, \
+    Inchworm, InchwormBackward, FullFrictionalInchworm, InchwormCrawl, FrictionalFrogMotionV2, \
+    InchwormPeriodScan, InchwormDCResponseVoltageScan, InchwormCrawlPeriodScan, InchwormReversedPeriodScan, \
+    InchwormBackwardPeriodScan, FullInchwormPeriodScan, \
+    FullFrictionalInchwormPeriodScan, FrictionalFrogMotionV2PeriodScan, FullFrictionalInchwormPeriodDampingFrictionScan
 
 from sfers.robot_simulation.recorder import RobotShapeRecorderFromData
 from sfers.utils.simulator_evaluation import BaseSimulatorTest
 
 
 class TestSingleActuatorSimulator(BaseSimulatorTest):
-    simulatorClassSet = [SingleActuatorCantilever]
+    simulator_class_set = [SingleActuatorCantilever]
     mSet = [1, 3, 5]
 
     @pytest.mark.timeout(300)
-    @pytest.mark.parametrize("simulatorClass", simulatorClassSet)
+    @pytest.mark.parametrize("simulator_class", simulator_class_set)
     @pytest.mark.parametrize("m", mSet)
-    def test_dc_simulation(self, simulatorClass, m):
-        simulator = self.set_simulator(simulatorClass, m)
+    def test_dc_simulation(self, simulator_class, m):
+        simulator = self.set_simulator(simulator_class, m)
         simulator.isGravity = True
         actuatorVoltages = [-1500]
-        simulator.actuatorDCDrive([actuatorVoltages], saving=False)
+        simulator.actuator_dc_drive([actuatorVoltages], saving=False)
         self.simulator_testing(simulator)
 
     @pytest.mark.timeout(300)
-    @pytest.mark.parametrize("simulatorClass", simulatorClassSet)
+    @pytest.mark.parametrize("simulator_class", simulator_class_set)
     @pytest.mark.parametrize("m", mSet)
-    def test_ac_simulation(self, simulatorClass, m):
-        simulator = self.set_simulator(simulatorClass, m)
+    def test_ac_simulation(self, simulator_class, m):
+        simulator = self.set_simulator(simulator_class, m)
         drivenFrequency = 1.0
         actuatorLength = 10.0
         arg = [m, drivenFrequency, actuatorLength]
@@ -36,10 +39,10 @@ class TestSingleActuatorSimulator(BaseSimulatorTest):
         self.simulator_testing(simulator)
 
     @pytest.mark.timeout(300)
-    @pytest.mark.parametrize("simulatorClass", simulatorClassSet)
+    @pytest.mark.parametrize("simulator_class", simulator_class_set)
     @pytest.mark.parametrize("m", mSet)
-    def test_data_recorder(self, simulatorClass, m):
-        simulator = self.set_simulator(simulatorClass, m)
+    def test_data_recorder(self, simulator_class, m):
+        simulator = self.set_simulator(simulator_class, m)
         io_buf = io.BytesIO()
         simulator.outfilename = io_buf
         simulator.reset()
@@ -55,23 +58,23 @@ class TestSingleActuatorSimulator(BaseSimulatorTest):
 
 
 class TestInchwormRobotSimulator(BaseSimulatorTest):
-    simulatorClassSet = [inchworm, InchwormBackward, FullFrictionalInchworm, InchwormCrawl, FrictionalFrogMotionV2]
+    simulator_class_set = [Inchworm, InchwormBackward, FullFrictionalInchworm, InchwormCrawl, FrictionalFrogMotionV2]
     mSet = [1, 3]
 
     @pytest.mark.timeout(300)
-    @pytest.mark.parametrize("simulatorClass", simulatorClassSet)
+    @pytest.mark.parametrize("simulator_class", simulator_class_set)
     @pytest.mark.parametrize("m", mSet)
-    def test_simulation(self, simulatorClass, m):
-        simulator = self.set_simulator(simulatorClass, m)
+    def test_simulation(self, simulator_class, m):
+        simulator = self.set_simulator(simulator_class, m)
         period = 1.0
         simulator.drive([period], saving=False)
         self.simulator_testing(simulator)
 
     @pytest.mark.timeout(300)
-    @pytest.mark.parametrize("simulatorClass", simulatorClassSet)
+    @pytest.mark.parametrize("simulator_class", simulator_class_set)
     @pytest.mark.parametrize("m", mSet)
-    def test_data_recorder(self, simulatorClass, m):
-        simulator = self.set_simulator(simulatorClass, m)
+    def test_data_recorder(self, simulator_class, m):
+        simulator = self.set_simulator(simulator_class, m)
         io_buf = io.BytesIO()
         simulator.outfilename = io_buf
         simulator.reset()
@@ -85,10 +88,10 @@ class TestInchwormRobotSimulator(BaseSimulatorTest):
         self.recorder_testing(recorder)
 
     @pytest.mark.timeout(300)
-    @pytest.mark.parametrize("simulatorClass", simulatorClassSet)
+    @pytest.mark.parametrize("simulator_class", simulator_class_set)
     @pytest.mark.parametrize("m", mSet)
-    def test_save_and_load_state(self, simulatorClass, m):
-        simulator = self.set_simulator(simulatorClass, m)
+    def test_save_and_load_state(self, simulator_class, m):
+        simulator = self.set_simulator(simulator_class, m)
         simulator.reset()
         period = 1.0
         simulator.drive([period], saving=False, closing=False)
@@ -101,10 +104,10 @@ class TestInchwormRobotSimulator(BaseSimulatorTest):
         simulator.drive([period], saving=False, closing=True)
 
     @pytest.mark.timeout(300)
-    @pytest.mark.parametrize("simulatorClass", simulatorClassSet)
+    @pytest.mark.parametrize("simulator_class", simulator_class_set)
     @pytest.mark.parametrize("m", mSet)
-    def test_simulator_copy(self, simulatorClass, m):
-        simulator = self.set_simulator(simulatorClass, m)
+    def test_simulator_copy(self, simulator_class, m):
+        simulator = self.set_simulator(simulator_class, m)
         simulator.reset()
         state_file = simulator.save_simulator_state()
         state_file_name = state_file.name
@@ -112,36 +115,36 @@ class TestInchwormRobotSimulator(BaseSimulatorTest):
 
 
 class TestInchwormRobotScanner(BaseSimulatorTest):
-    scannerClassSet = [InchwormPeriodScan,
-                       InchwormCrawlPeriodScan,
-                       InchwormReversedPeriodScan,
-                       InchwormBackwardPeriodScan,
-                       FullInchwormPeriodScan,
-                       FullFrictionalInchwormPeriodScan,
-                       FrictionalFrogMotionV2PeriodScan,
-                       FullFrictionalInchwormPeriodDampingFrictionScan,
-                       SingleActuatorCantileverDCResponseVoltageScan,
-                       SingleActuatorCantileverACResponse,
-                       InchwormDCResponseVoltageScan]
+    scanner_class_set = [InchwormPeriodScan,
+                         InchwormCrawlPeriodScan,
+                         InchwormReversedPeriodScan,
+                         InchwormBackwardPeriodScan,
+                         FullInchwormPeriodScan,
+                         FullFrictionalInchwormPeriodScan,
+                         FrictionalFrogMotionV2PeriodScan,
+                         FullFrictionalInchwormPeriodDampingFrictionScan,
+                         SingleActuatorCantileverDCResponseVoltageScan,
+                         SingleActuatorCantileverACResponse,
+                         InchwormDCResponseVoltageScan]
     mSet = [1, 3]
 
     @pytest.mark.timeout(300)
-    @pytest.mark.parametrize("scannerClass", scannerClassSet)
+    @pytest.mark.parametrize("scanner_class", scanner_class_set)
     @pytest.mark.parametrize("m", mSet)
-    def test_scaning(self, scannerClass, m):
-        scanner = self.set_simulator(scannerClass, m)
+    def test_scaning(self, scanner_class, m):
+        scanner = self.set_simulator(scanner_class, m)
         scanner.scan(saving=False)
 
 
 class TestRobotShapeRecorder(BaseSimulatorTest):
-    simulatorNameSet = ['forward',
-                        'backward',
-                        'crawl',
-                        'full frictional inchworm']
+    simulator_name_set = ['forward',
+                          'backward',
+                          'crawl',
+                          'full frictional inchworm']
 
     @pytest.mark.timeout(300)
-    @pytest.mark.parametrize("simulatorName", simulatorNameSet)
-    def test_recording(self, simulatorName):
-        recorder = self.set_recorder(simulatorName)
+    @pytest.mark.parametrize("simulator_name", simulator_name_set)
+    def test_recording(self, simulator_name):
+        recorder = self.set_recorder(simulator_name)
         recorder.run()
         self.recorder_testing(recorder)

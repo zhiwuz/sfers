@@ -13,7 +13,7 @@ from sfers.robot_simulation.create_actuator import RobotBase
 
 
 class RobotSimulator(RobotBase):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         RobotBase.__init__(self, parameter=parameter)
         self.step = 0
         self.simTime = 0
@@ -65,9 +65,9 @@ class RobotSimulator(RobotBase):
         self._p = bullet_client.BulletClient(connection_mode=pybullet.DIRECT)
         self._p.resetSimulation()
         self._p.resetDebugVisualizerCamera(self.N * 15, -360, -16, [0, 0, 1])
-        (self.boxId, self.jointNumber) = self.create1DMultiActuators(self.N, self.m, self.actuatorMass,
-                                                                     self.actuatorLength,
-                                                                     self.width, self.thickness)
+        (self.boxId, self.jointNumber) = self.create_1d_multi_actuators(self.N, self.m, self.actuatorMass,
+                                                                        self.actuatorLength,
+                                                                        self.width, self.thickness)
         self.jointIndex = range(self.jointNumber)
         self.linkIndex = range(self.jointNumber + 1)
 
@@ -80,28 +80,28 @@ class RobotSimulator(RobotBase):
     def close(self):
         self._p.disconnect()
 
-    def TorVolThe(self, Theta, angularVelocity, Voltage):
+    def tor_vol_the(self, Theta, angularVelocity, Voltage):
         thetaTarget = -self.beta * Voltage
         K = self.halfEI / self.jointLength
         omega = 2 * math.pi * 1.0
         Tor = -self.width * K * ((Theta - thetaTarget) + (self.dampingEta / omega) * angularVelocity)
         return Tor
 
-    def printProgress(self):
+    def print_progress(self):
         print('N=', self.N, ', m=', self.m, "Frequency=", round(self.drivenFrequency, 2), "Hz, Actuator length",
               self.actuatorLength,
               "cm, step=", self.step + 1)
 
-    def simStep(self, actuatorVoltages):
+    def sim_step(self, actuatorVoltages):
         if (self.step + 1) % 100000 == 0:
-            self.printProgress()
+            self.print_progress()
 
         self.simTime = self.step * self.timeStep
         [self.theta, self.angularVelocities, self.positions, self.motorVoltages, self.Tor,
-         self.positionVelocities] = self.voltageTorqueControlStep(
+         self.positionVelocities] = self.voltage_torque_control_step(
             self.boxId,
             actuatorVoltages,
-            self.TorVolThe,
+            self.tor_vol_the,
             self.N,
             self.m,
             self.jointNumber,
@@ -185,7 +185,7 @@ class RobotSimulator(RobotBase):
 
 
 class SingleActuatorCantilever(RobotSimulator):
-    def __init__(self, parameter='parameter 2', outfilename=None):
+    def __init__(self, parameter='trimorph parameter 2', outfilename=None):
         RobotSimulator.__init__(self, parameter=parameter)
         self.isGravity = True
         self.N = 1
@@ -226,16 +226,16 @@ class SingleActuatorCantilever(RobotSimulator):
                             actuatorLength=self.actuatorLength,
                             drivenFrequency=self.drivenFrequency)
 
-    def actuatorDCDrive(self, arg, saving=True, closing=True):
+    def actuator_dc_drive(self, arg, saving=True, closing=True):
         actuatorVoltages = arg[0]
         self.voltage = actuatorVoltages[0]
         self.reset()
         for step in range(self.simCycles):
-            self.simStep(actuatorVoltages)
+            self.sim_step(actuatorVoltages)
         filename = self.drive_cooldown(saving=saving, closing=closing)
         return filename
 
-    def actuatorACDrive(self, arg, saving=True, closing=True):
+    def actuator_ac_drive(self, arg, saving=True, closing=True):
         m = arg[0]
         drivenFrequency = arg[1]
         actuatorLength = arg[2]
@@ -245,25 +245,25 @@ class SingleActuatorCantilever(RobotSimulator):
         self.reset()
         for step in range(self.simCycles):
             actuatorVoltages = [-750 * (1 - math.cos(2 * math.pi * drivenFrequency * self.simTime))]
-            self.simStep(actuatorVoltages)
+            self.sim_step(actuatorVoltages)
         filename = self.drive_cooldown(saving=saving, closing=closing)
         return filename
 
     def drive(self, arg, saving=True, closing=True):
-        return self.actuatorACDrive(arg, saving=saving, closing=closing)
+        return self.actuator_ac_drive(arg, saving=saving, closing=closing)
 
-    def stepDrive(self, saving=True, closing=True):
+    def step_drive(self, saving=True, closing=True):
         self.reset()
         for step in range(self.simCycles):
             if self.simTime < 2 * self.timeStep:
                 actuatorVoltages = [0.0]
             else:
                 actuatorVoltages = [-1500.0]
-            self.simStep(actuatorVoltages)
+            self.sim_step(actuatorVoltages)
         filename = self.drive_cooldown(saving=saving, closing=closing)
         return filename
 
-    def modelResonantFrequencies(self):
+    def model_resonant_frequencies(self):
         """
         Resonant frequency of a cantilever from a simple Euler-Bernoulli model
         """
@@ -274,7 +274,7 @@ class SingleActuatorCantilever(RobotSimulator):
 
 
 class SingleActuatorCantileverDCResponseVoltageScan(SingleActuatorCantilever):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         SingleActuatorCantilever.__init__(self, parameter=parameter, outfilename=None)
         self.m = 3
         self.isGravity = True
@@ -291,7 +291,7 @@ class SingleActuatorCantileverDCResponseVoltageScan(SingleActuatorCantilever):
     def drive(self, arg, saving=True, closing=True):
         actuatorVoltages, = arg
         simulator = deepcopy(self)
-        return simulator.actuatorDCDrive([actuatorVoltages, ], saving=saving, closing=closing)
+        return simulator.actuator_dc_drive([actuatorVoltages, ], saving=saving, closing=closing)
 
     def scan(self, saving=True, closing=True):
         voltages = self.voltages
@@ -333,7 +333,7 @@ class SingleActuatorCantileverDCResponseVoltageScan(SingleActuatorCantilever):
 
 
 class SingleActuatorCantileverACResponse(SingleActuatorCantilever):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         SingleActuatorCantilever.__init__(self, parameter=parameter, outfilename=None)
         self.ms = [5]
         self.drivenFrequencies = np.linspace(1, 40, num=40)
@@ -347,9 +347,9 @@ class SingleActuatorCantileverACResponse(SingleActuatorCantilever):
     def drive(self, arg, saving=True, closing=True):
         m, drivenFrequency, actuatorLength = arg
         simulator = deepcopy(self)
-        return simulator.actuatorACDrive([m, drivenFrequency, actuatorLength], saving=saving, closing=closing)
+        return simulator.actuator_ac_drive([m, drivenFrequency, actuatorLength], saving=saving, closing=closing)
 
-    def actuatorACScan(self, saving=True, closing=True):
+    def actuator_ac_scan(self, saving=True, closing=True):
         ms = self.ms
         drivenFrequencies = self.drivenFrequencies
         actuatorLengthes = self.actuatorLengthes
@@ -392,11 +392,11 @@ class SingleActuatorCantileverACResponse(SingleActuatorCantilever):
                             drivenFrequency=self.drivenFrequency)
 
     def scan(self, saving=True, closing=True):
-        return self.actuatorACScan(saving=saving, closing=closing)
+        return self.actuator_ac_scan(saving=saving, closing=closing)
 
 
-class inchworm(RobotSimulator):
-    def __init__(self, parameter='parameter 2', outfilename=None):
+class Inchworm(RobotSimulator):
+    def __init__(self, parameter='trimorph parameter 2', outfilename=None):
         RobotSimulator.__init__(self, parameter=parameter)
         self.frictionLow = 2.5
         self.frictionHigh = 2.5
@@ -419,7 +419,7 @@ class inchworm(RobotSimulator):
         self.outfilename = outfilename
 
     @staticmethod
-    def setFrictionalCoefficients(frictionLow, frictionHigh, N, m, fraction=0.5):
+    def set_frictional_coefficients(frictionLow, frictionHigh, N, m, fraction=0.5):
         high_friction_segments = int(math.ceil(m * fraction + 0.5))
         low_friction_segments = int(N * m + 1 - high_friction_segments)
         lateralFrictionCoefficients = [frictionLow for _ in
@@ -432,11 +432,9 @@ class inchworm(RobotSimulator):
 
     def reset(self):
         RobotSimulator.reset(self)
-        self.lateralFrictionCoefficients = self.setFrictionalCoefficients(self.frictionLow,
-                                                                          self.frictionHigh,
-                                                                          self.N,
-                                                                          self.m,
-                                                                          fraction=self.highFrictionalActuatorFraction)
+        self.lateralFrictionCoefficients = self.set_frictional_coefficients(self.frictionLow, self.frictionHigh, self.N,
+                                                                            self.m,
+                                                                            fraction=self.highFrictionalActuatorFraction)
         self._p.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.planeId = self._p.loadURDF('plane.urdf', basePosition=[0, 0, -0.5 * self.thickness], globalScaling=10.0)
 
@@ -454,14 +452,14 @@ class inchworm(RobotSimulator):
                                    lateralFriction=self.lateralFrictionCoefficients[joint + 1],
                                    linearDamping=0.0, angularDamping=0.0, jointDamping=0.0)
 
-    def controlStep(self, actuatorVoltages):
+    def control_step(self, actuatorVoltages):
         for simStep in range(self.simCycles):
-            self.simStep(actuatorVoltages)
+            self.sim_step(actuatorVoltages)
 
         return [list(-1 * np.array(self.theta)), list(-1 * np.array(self.angularVelocities)), self.positions,
                 self.motorVoltages, self.Tor]
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         """
         Default voltages for frictionless inchworm only driving act #5 forward moving
         """
@@ -475,23 +473,23 @@ class inchworm(RobotSimulator):
             voltages = (self.onVoltages[0], 0.0, 0.0, 0.0, 0.0)
         return voltages
 
-    def applyInchwormVoltages(self, time, period):
-        return self.applyVoltages(time, period)
+    def apply_inchworm_voltages(self, time, period):
+        return self.apply_voltages(time, period)
 
-    def robotDrive(self, arg, saving=True, closing=True):
+    def robot_drive(self, arg, saving=True, closing=True):
         period = arg[0]
         self.period = period
         self.reset()
         for step in range(self.simCycles):
-            actuatorVoltages = self.applyVoltages(self.simTime, period)
-            self.simStep(actuatorVoltages)
+            actuatorVoltages = self.apply_voltages(self.simTime, period)
+            self.sim_step(actuatorVoltages)
         filename = self.drive_cooldown(saving=saving, closing=closing)
         return filename
 
     def drive(self, arg, saving=True, closing=True):
-        return self.robotDrive(arg, saving=saving, closing=closing)
+        return self.robot_drive(arg, saving=saving, closing=closing)
 
-    def dataToArray(self):
+    def data_to_array(self):
         self.dataTime = np.array(self.dataTime)
         self.dataTheta = np.array(self.dataTheta)
         self.dataAngularVelocities = np.array(self.dataAngularVelocities)
@@ -500,7 +498,7 @@ class inchworm(RobotSimulator):
         self.dataMotorVoltages = np.array(self.dataMotorVoltages)
         self.dataPositionVelocities = np.array(self.dataPositionVelocities)
 
-    def saveData(self, outfile, dateTime):
+    def save_data(self, outfile, dateTime):
         np.savez_compressed(outfile, dataTime=self.dataTime, dataTheta=self.dataTheta,
                             dataAngularVelocities=self.dataAngularVelocities,
                             dataPositions=self.dataPositions, dataMotorVoltages=self.dataMotorVoltages,
@@ -514,27 +512,27 @@ class inchworm(RobotSimulator):
                             frictionHigh=self.frictionHigh, period=self.period)
 
     def save(self):
-        self.dataToArray()
-        dateTime, self.filename = self.filenameGenerate()
+        self.data_to_array()
+        dateTime, self.filename = self.filename_generate()
         if self.outfilename is None:
             outfile = 'data/' + self.filename
         else:
             outfile = self.outfilename
-        self.saveData(outfile, dateTime)
+        self.save_data(outfile, dateTime)
 
-    def filenameGenerate(self):
+    def filename_generate(self):
         dateTime = datetime.datetime.today().strftime('%m_%d_%Y_%H_%M')
         filename = self.folderLabel + 'ActuatorLength' + str(self.actuatorLength) + 'cm_N_' + str(
             self.N) + '_m_' + str(self.m) + '_Period_' + str(self.period) + 's_' + dateTime + '.npz'
         return dateTime, filename
 
 
-class InchwormBackward(inchworm):
-    def __init__(self, parameter='parameter 2'):
-        inchworm.__init__(self, parameter=parameter)
+class InchwormBackward(Inchworm):
+    def __init__(self, parameter='trimorph parameter 2'):
+        Inchworm.__init__(self, parameter=parameter)
         self.folderLabel = 'SimpleWalker_ZZ7_Backward_'
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         """
         Default voltages for frictionless inchworm only driving act #5 backward moving
         """
@@ -549,14 +547,14 @@ class InchwormBackward(inchworm):
         return voltages
 
 
-class FullFrictionalInchworm(inchworm):
-    def __init__(self, parameter='parameter 2'):
-        inchworm.__init__(self, parameter=parameter)
+class FullFrictionalInchworm(Inchworm):
+    def __init__(self, parameter='trimorph parameter 2'):
+        Inchworm.__init__(self, parameter=parameter)
         self.frictionHigh = 4.0
         self.folderLabel = 'SimpleWalker_ZZ7_FullFrictionalInchworm_'
 
     @staticmethod
-    def setFrictionalCoefficients(frictionLow, frictionHigh, N, m, fraction=0.5):
+    def set_frictional_coefficients(frictionLow, frictionHigh, N, m, fraction=0.5):
         high_friction_segments = int(math.ceil(m * fraction + 0.5))
         low_friction_segments = int(N * m + 1 - 2 * high_friction_segments)
         lateralFrictionCoefficients = high_friction_segments * [frictionHigh] \
@@ -565,7 +563,7 @@ class FullFrictionalInchworm(inchworm):
 
         return lateralFrictionCoefficients
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         """
         Default voltages for frictional inchworm and frog motion v1
         """
@@ -584,7 +582,7 @@ class FullFrictionalInchworm(inchworm):
 
 class FrictionalFrogMotionV2(FullFrictionalInchworm):
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         """
         Default voltages for frog motion v2
         """
@@ -604,12 +602,12 @@ class FrictionalFrogMotionV2(FullFrictionalInchworm):
         return voltages
 
 
-class InchwormCrawl(inchworm):
-    def __init__(self, parameter='parameter 2'):
-        inchworm.__init__(self, parameter=parameter)
+class InchwormCrawl(Inchworm):
+    def __init__(self, parameter='trimorph parameter 2'):
+        Inchworm.__init__(self, parameter=parameter)
         self.folderLabel = 'SimpleWalker_ZZ7_InchwormCrawl_'
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         if time % period < (1.0 / 2.0) * period:
             voltages = (0.0, 0.0, 0.0, 0.0, 0.0)
         else:
@@ -617,9 +615,9 @@ class InchwormCrawl(inchworm):
         return voltages
 
 
-class InchwormPeriodScan(inchworm):
-    def __init__(self, parameter='parameter 2'):
-        inchworm.__init__(self, parameter=parameter)
+class InchwormPeriodScan(Inchworm):
+    def __init__(self, parameter='trimorph parameter 2'):
+        Inchworm.__init__(self, parameter=parameter)
         self.frequencies = np.concatenate((np.linspace(1.0, 18.0, num=18),
                                            np.linspace(20.0, 30.0, num=6),
                                            np.linspace(35.0, 40.0, num=2)))
@@ -627,24 +625,24 @@ class InchwormPeriodScan(inchworm):
         self.periods = None
 
     def reset(self):
-        inchworm.reset(self)
+        Inchworm.reset(self)
         self.periods = 1.0 / self.frequencies
         self.foldername = self.folderLabel + 'N_5_m_' + str(self.m) + self.scanLabel + self.dateTime
 
     def save(self):
         if not os.path.exists('data/' + self.foldername):
             os.makedirs('data/' + self.foldername)
-        self.dataToArray()
-        dateTime, self.filename = self.filenameGenerate()
+        self.data_to_array()
+        dateTime, self.filename = self.filename_generate()
         outfile = 'data/' + self.foldername + '/' + self.filename
-        self.saveData(outfile, dateTime)
+        self.save_data(outfile, dateTime)
 
     def drive(self, arg, saving=True, closing=True):
         period = arg[0]
         simulator = deepcopy(self)
-        return simulator.robotDrive([period, ], saving=saving, closing=closing)
+        return simulator.robot_drive([period, ], saving=saving, closing=closing)
 
-    def multiThreadSetup(self, args, saving=True, closing=True):
+    def multi_thread_setup(self, args, saving=True, closing=True):
         poolNumber = os.cpu_count()
         poolNumber = np.minimum(len(args), poolNumber)
         pooler = Pool(poolNumber)
@@ -662,10 +660,10 @@ class InchwormPeriodScan(inchworm):
     def scan(self, saving=True, closing=True):
         periods = self.periods
         args = [[periods[i]] for i in range(len(periods))]
-        filenames = self.multiThreadSetup(args, saving=saving, closing=closing)
+        filenames = self.multi_thread_setup(args, saving=saving, closing=closing)
         return filenames
 
-    def filenameGenerate(self):
+    def filename_generate(self):
         dateTime = datetime.datetime.today().strftime('%m_%d_%Y_%H_%M')
         filename = self.folderLabel + 'ActuatorLength' + str(self.actuatorLength) + 'cm_N_' + str(
             self.N) + '_m_' + str(self.m) + '_Period_' + str(self.period) + 's_' + '.npz'
@@ -673,7 +671,7 @@ class InchwormPeriodScan(inchworm):
 
 
 class InchwormDCResponseVoltageScan(InchwormPeriodScan):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         InchwormPeriodScan.__init__(self, parameter=parameter)
         self.folderLabel = 'Inchworm_dc_response_'
         self.scanLabel = '-VoltageScan_'
@@ -681,14 +679,14 @@ class InchwormDCResponseVoltageScan(InchwormPeriodScan):
                          (520.0, 0.0, 0.0, 0.0, 0.0)]
         self.voltage = None
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         return self.voltage
 
     def reset(self):
-        inchworm.reset(self)
+        Inchworm.reset(self)
         self.foldername = self.folderLabel + 'N_5_m_' + str(self.m) + self.scanLabel + self.dateTime
 
-    def filenameGenerate(self):
+    def filename_generate(self):
         dateTime = datetime.datetime.today().strftime('%m_%d_%Y_%H_%M')
         filename = self.folderLabel + 'ActuatorLength' + str(self.actuatorLength) + 'cm_N_' + str(
             self.N) + '_m_' + str(self.m) + '_Voltage_' + str(self.voltage) + 'V_' + '.npz'
@@ -698,21 +696,21 @@ class InchwormDCResponseVoltageScan(InchwormPeriodScan):
         voltage = arg[0]
         simulator = deepcopy(self)
         simulator.voltage = voltage
-        return simulator.robotDrive([None, ], saving=saving, closing=closing)
+        return simulator.robot_drive([None, ], saving=saving, closing=closing)
 
     def scan(self, saving=True, closing=True):
         voltages = self.voltages
         args = [[voltages[i]] for i in range(len(voltages))]
-        filenames = self.multiThreadSetup(args, saving=saving, closing=closing)
+        filenames = self.multi_thread_setup(args, saving=saving, closing=closing)
         return filenames
 
 
 class InchwormCrawlPeriodScan(InchwormPeriodScan):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         InchwormPeriodScan.__init__(self, parameter=parameter)
         self.folderLabel = 'SimpleWalker_ZZ7_InchwormCrawl_'
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         if time % period < (1.0 / 2.0) * period:
             voltages = (0.0, 0.0, 0.0, 0.0, 0.0)
         else:
@@ -721,11 +719,11 @@ class InchwormCrawlPeriodScan(InchwormPeriodScan):
 
 
 class InchwormReversedPeriodScan(InchwormPeriodScan):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         InchwormPeriodScan.__init__(self, parameter=parameter)
         self.folderLabel = 'SimpleWalker_ZZ7_Reversed_'
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         if time % period < (1.0 / 4.0) * period:
             voltages = (0.0, 0.0, 0.0, 0.0, 0.0)
         elif time % period < (1.0 / 2.0) * period:
@@ -738,11 +736,11 @@ class InchwormReversedPeriodScan(InchwormPeriodScan):
 
 
 class InchwormBackwardPeriodScan(InchwormPeriodScan):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         InchwormPeriodScan.__init__(self, parameter=parameter)
         self.folderLabel = 'SimpleWalker_ZZ7_Backward_'
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         if time % period < (1.0 / 4.0) * period:
             voltages = (0.0, 0.0, 0.0, 0.0, 0.0)
         elif time % period < (1.0 / 2.0) * period:
@@ -755,11 +753,11 @@ class InchwormBackwardPeriodScan(InchwormPeriodScan):
 
 
 class FullInchwormPeriodScan(InchwormPeriodScan):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         InchwormPeriodScan.__init__(self, parameter=parameter)
         self.folderLabel = 'SimpleWalker_ZZ7_Full'
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         """
         Default voltages for frictionless full inchworm forward motion
         """
@@ -777,20 +775,20 @@ class FullInchwormPeriodScan(InchwormPeriodScan):
 
 
 class FullFrictionalInchwormPeriodScan(InchwormPeriodScan, FullFrictionalInchworm):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         InchwormPeriodScan.__init__(self, parameter=parameter)
         self.frictionHigh = 4.0
         self.folderLabel = 'SimpleWalker_ZZ7_FullFrictionalInchworm_'
 
 
 class FrictionalFrogMotionV2PeriodScan(InchwormPeriodScan, FrictionalFrogMotionV2):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         InchwormPeriodScan.__init__(self, parameter=parameter)
         self.folderLabel = 'SimpleWalker_ZZ7_FrictionalFrogMotionV2_'
 
 
 class FullFrictionalInchwormPeriodDampingFrictionScan(FullFrictionalInchwormPeriodScan):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         FullFrictionalInchwormPeriodScan.__init__(self, parameter=parameter)
         self.scanLabel = '-PeriodDampingFrictionScan_'
         self.dampingEtas = np.linspace(0.008, 0.108, num=5)
@@ -807,10 +805,10 @@ class FullFrictionalInchwormPeriodDampingFrictionScan(FullFrictionalInchwormPeri
                 for j in range(len(dampingEtas))
                 for k in range(len(frictionLows))
                 for l in range(len(frictionHighs))]
-        filenames = self.multiThreadSetup(args, saving=saving, closing=closing)
+        filenames = self.multi_thread_setup(args, saving=saving, closing=closing)
         return filenames
 
-    def filenameGenerate(self):
+    def filename_generate(self):
         dateTime = datetime.datetime.today().strftime('%m_%d_%Y_%H_%M')
         filename = self.folderLabel + 'ActuatorLength' + str(self.actuatorLength) + 'cm_N_' + str(
             self.N) + '_m_' + str(self.m) + '_Period_' + str(self.period) + 's_' + 'DampingEta_' + str(
@@ -826,9 +824,9 @@ class FullFrictionalInchwormPeriodDampingFrictionScan(FullFrictionalInchwormPeri
         simulator.frictionLow = frictionLow
         simulator.frictionHigh = frictionHigh
         simulator.reset()
-        return simulator.robotDrive([period, ], saving=saving, closing=closing)
+        return simulator.robot_drive([period, ], saving=saving, closing=closing)
 
-    def printProgress(self):
+    def print_progress(self):
         print("Frequency = ", round(1.0 / self.period, 2), "Hz, damping eta = ",
               self.dampingEta, ", friction low = ", self.frictionLow,
               ", friction high", self.frictionHigh, ", step=", self.step + 1)
@@ -836,30 +834,30 @@ class FullFrictionalInchwormPeriodDampingFrictionScan(FullFrictionalInchwormPeri
 
 class FrictionalFrogMotionV2PeriodDampingFrictionScan(FullFrictionalInchwormPeriodDampingFrictionScan,
                                                       FrictionalFrogMotionV2):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         FullFrictionalInchwormPeriodDampingFrictionScan.__init__(self, parameter=parameter)
         self.folderLabel = 'SimpleWalker_ZZ7_FrictionalFrogMotionV2_'
 
 
 class EfficientJumper(InchwormCrawl):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         InchwormCrawl.__init__(self, parameter=parameter)
         self.folderLabel = 'EfficientJumper_'
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         voltages = (0.0, self.onVoltages[1], self.onVoltages[2], self.onVoltages[3], 0.0)
         return voltages
 
 
 class EfficientJumperDelayScan(InchwormPeriodScan, EfficientJumper):
-    def __init__(self, parameter='parameter 2', delays=None):
+    def __init__(self, parameter='trimorph parameter 2', delays=None):
         InchwormPeriodScan.__init__(self, parameter=parameter)
         self.folderLabel = 'EfficientJumper_'
         if delays is None:
             delays = np.arange(-0.059, 0.061, 0.002)
         self.frequencies = 1.0 / delays
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         delay = period
         time3 = 0.059309
         if delay >= 0:
@@ -867,7 +865,7 @@ class EfficientJumperDelayScan(InchwormPeriodScan, EfficientJumper):
                 voltages = (0.0, self.onVoltages[1], self.onVoltages[2], self.onVoltages[3], 0.0)
             elif time < time3:
                 voltages = (
-                self.onVoltages[0], self.onVoltages[1], self.onVoltages[2], self.onVoltages[3], self.onVoltages[4])
+                    self.onVoltages[0], self.onVoltages[1], self.onVoltages[2], self.onVoltages[3], self.onVoltages[4])
             else:
                 voltages = (0.0, 0.0, 0.0, 0.0, 0.0)
         else:
@@ -875,20 +873,20 @@ class EfficientJumperDelayScan(InchwormPeriodScan, EfficientJumper):
                 voltages = (self.onVoltages[0], 0.0, 0.0, 0.0, self.onVoltages[4])
             elif time < time3 + abs(delay):
                 voltages = (
-                self.onVoltages[0], self.onVoltages[1], self.onVoltages[2], self.onVoltages[3], self.onVoltages[4])
+                    self.onVoltages[0], self.onVoltages[1], self.onVoltages[2], self.onVoltages[3], self.onVoltages[4])
             else:
                 voltages = (0.0, 0.0, 0.0, 0.0, 0.0)
         return voltages
 
 
 class EfficientJumperActuatorLengthScan(EfficientJumperDelayScan):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         EfficientJumperDelayScan.__init__(self, parameter=parameter)
         self.scanLabel = '-ActuatorLengthScan_'
         self.period = 1.0 / 40.0
         self.actuatorLengths = np.arange(2, 10, 0.2)
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         if time < 0.5 * period:
             voltages = (0.0, self.onVoltages[1], self.onVoltages[2], self.onVoltages[3], 0.0)
         else:
@@ -901,17 +899,17 @@ class EfficientJumperActuatorLengthScan(EfficientJumperDelayScan):
         simulator = deepcopy(self)
         simulator.actuatorLength = actuatorLength
         simulator.reset()
-        return simulator.robotDrive([period, ], saving=saving, closing=closing)
+        return simulator.robot_drive([period, ], saving=saving, closing=closing)
 
     def scan(self, saving=True, closing=True):
         actuatorLengths = self.actuatorLengths
         args = [[actuatorLengths[i]] for i in range(len(actuatorLengths))]
-        filenames = self.multiThreadSetup(args, saving=saving, closing=closing)
+        filenames = self.multi_thread_setup(args, saving=saving, closing=closing)
         return filenames
 
 
 class EfficientJumperDelayActuatorLengthScan(EfficientJumperActuatorLengthScan):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         EfficientJumperActuatorLengthScan.__init__(self, parameter=parameter)
         self.scanLabel = '-ActuatorLength-Delay-Scan_'
         self.frequencies = np.arange(10.0, 41.0, 1.0)
@@ -922,22 +920,22 @@ class EfficientJumperDelayActuatorLengthScan(EfficientJumperActuatorLengthScan):
         simulator = deepcopy(self)
         simulator.actuatorLength = actuatorLength
         simulator.reset()
-        return simulator.robotDrive([period, ], saving=saving, closing=closing)
+        return simulator.robot_drive([period, ], saving=saving, closing=closing)
 
     def scan(self, saving=True, closing=True):
         actuatorLengths = self.actuatorLengths
         periods = self.periods
         args = [[actuatorLengths[i], periods[j]] for i in range(len(actuatorLengths)) for j in range(len(periods))]
-        filenames = self.multiThreadSetup(args, saving=saving, closing=closing)
+        filenames = self.multi_thread_setup(args, saving=saving, closing=closing)
         return filenames
 
 
 class EfficientMover(FullFrictionalInchworm):
-    def __init__(self, parameter='parameter 2'):
+    def __init__(self, parameter='trimorph parameter 2'):
         FullFrictionalInchworm.__init__(self, parameter=parameter)
         self.folderLabel = 'EfficientMover_'
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         time1 = 0.03437491666666667
         if time < time1:
             voltages = (self.onVoltages[0], 0.0, 0.0, 0.0, 0.0)
@@ -947,14 +945,14 @@ class EfficientMover(FullFrictionalInchworm):
 
 
 class EfficientMoverDelayScan(InchwormPeriodScan, EfficientMover):
-    def __init__(self, parameter='parameter 2', delays=None):
+    def __init__(self, parameter='trimorph parameter 2', delays=None):
         InchwormPeriodScan.__init__(self, parameter=parameter)
         self.folderLabel = 'EfficientMover_'
         if delays is None:
             delays = np.arange(0.002, 0.062, 0.002)
         self.frequencies = 1.0 / delays
 
-    def applyVoltages(self, time, period):
+    def apply_voltages(self, time, period):
         delay = period
         if time < delay:
             voltages = (self.onVoltages[0], 0.0, 0.0, 0.0, 0.0)
