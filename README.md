@@ -1,4 +1,4 @@
-# SFERS: Simulation Framework for Electrostatic Robotic Sheet
+# SFERS: Simulation Framework for Electroactive Robotic Sheet
 SFERS is an *open-source* project for simulating planar piezoelectric soft robots, one-dimensional arrays of actuators based on pseudo-rigid body model employed with PyBullet.
 ## Installation
 SFERS is compatible with Python 3.6 - 3.9. The easiest way to install SFERS is to with PIP. 
