@@ -20,19 +20,18 @@ We request that publications that use SFERS cite the following papers:
 
 Overall simulation environment:
 
-Zhiwu Zheng, Prakhar Kumar, Yenan Chen, Hsin Cheng, Sigurd Wagner, Minjie Chen, Naveen Verma and James C. Sturm. <strong>Scalable Simulation and Demonstration of Jumping Piezoelectric 2-D Soft Robots</strong>. arXiv preprint, arXiv: [2202.13521](https://arxiv.org/abs/2202.13521)
+Zhiwu Zheng, Prakhar Kumar, Yenan Chen, Hsin Cheng, Sigurd Wagner, Minjie Chen, Naveen Verma and James C. Sturm. <strong>Scalable Simulation and Demonstration of Jumping Piezoelectric 2-D Soft Robots</strong>. In *2022 International Conference on Robotics and Automation (ICRA)*, pp. [5199-5204](https://ieeexplore.ieee.org/abstract/document/9811927). IEEE, 2022.
 
 ```
-@misc{https://doi.org/10.48550/arxiv.2202.13521,
-    doi = {10.48550/ARXIV.2202.13521},
-    url = {https://arxiv.org/abs/2202.13521},
-    author = {Zheng, Zhiwu and Kumar, Prakhar and Chen, Yenan and Cheng, Hsin and Wagner, Sigurd and Chen, Minjie and Verma, Naveen and Sturm, James C.},
-    keywords = {Robotics (cs.RO), Systems and Control (eess.SY), FOS: Computer and information sciences, FOS: Computer and information sciences, FOS: Electrical engineering, electronic engineering, information engineering, FOS: Electrical engineering, electronic engineering, information engineering},
-    title = {Scalable Simulation and Demonstration of Jumping Piezoelectric 2-D Soft Robots},
-    publisher = {arXiv},
-    year = {2022},
-    copyright = {arXiv.org perpetual, non-exclusive license}
-}
+@INPROCEEDINGS{9811927,
+  author={Zheng, Zhiwu and Kumar, Prakhar and Chen, Yenan and Cheng, Hsin and Wagner, Sigurd and Chen, Minjie and Verma, Naveen and Sturm, James C.},
+  booktitle={2022 International Conference on Robotics and Automation (ICRA)}, 
+  title={Scalable Simulation and Demonstration of Jumping Piezoelectric 2-D Soft Robots}, 
+  year={2022},
+  volume={},
+  number={},
+  pages={5199-5204},
+  doi={10.1109/ICRA46639.2022.9811927}}
 ```
 
 For modeling of piezoelectric robots:
